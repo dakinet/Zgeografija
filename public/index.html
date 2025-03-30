@@ -25,23 +25,23 @@
       </div>
       
       <!-- Debug info - sakriven po default-u -->
-      <div id="debug-info" class="debug-info" style="display: none; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
-        <h3 style="margin-bottom: 10px;">Debug Info</h3>
+      <div id="debug-info" class="debug-info" style="display: none;">
+        <h3>Debug Info</h3>
         <p>Socket ID: <span id="debug-socket-id">Nepovezan</span></p>
         <p>Status: <span id="debug-status">Čekanje</span></p>
         <div id="debug-events"></div>
-        <button id="debug-toggle-btn" class="btn-icon" style="margin-top: 10px;">Sakrij Debug</button>
+        <button id="debug-toggle-btn" class="btn-icon">Sakrij Debug</button>
       </div>
       
       <!-- Debugger dugme -->
-      <button id="show-debug-btn" class="btn-icon" style="margin-top: 20px; padding: 5px; font-size: 12px;">Prikaži debugger</button>
+      <button id="show-debug-btn" class="btn-icon">Prikaži debugger</button>
     </section>
     
     <!-- Ekran čekaonice -->
     <section id="lobby-screen" class="screen">
       <h2>Čekaonica</h2>
       <div class="game-info">
-        <p>Kod igre: <span id="game-id-display" class="highlight"></span></p>
+        <p>Kod igre: <span id="game-id-display" class="highlight">ABCDEF</span></p>
         <button id="copy-game-id" class="btn-icon" title="Kopiraj kod">
           <i class="fas fa-copy"></i>
         </button>
@@ -49,28 +49,83 @@
       
       <div class="players-container">
         <h3>Igrači</h3>
-        <ul id="players-list"></ul>
+        <ul id="players-list">
+          <li>
+            <div class="player-item">
+              <span class="player-name">Player1</span>
+              <div>
+                <span class="player-status host">Domaćin</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="player-item">
+              <span class="player-name">Player2</span>
+              <div>
+                <span class="player-status ready">Spreman</span>
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
       
       <div class="categories-container">
         <h3>Kategorije</h3>
-        <ul id="categories-list"></ul>
+        <ul id="categories-list">
+          <li>Država</li>
+          <li>Grad</li>
+          <li>Reka</li>
+          <li>Planina</li>
+          <li>Životinja</li>
+          <li>Biljka</li>
+          <li>Hrana</li>
+        </ul>
       </div>
       
       <div class="lobby-controls">
         <button id="ready-btn" class="btn primary">Spreman</button>
-        <p id="waiting-message" class="hidden">Čekanje ostalih igrača...</p>
+        <p id="waiting-message">Čekanje ostalih igrača...</p>
       </div>
     </section>
     
     <!-- Ekran izbora slova -->
     <section id="letter-selection-screen" class="screen">
       <h2>Izaberi slovo</h2>
-      <p id="current-player-message"></p>
+      <p id="current-player-message">Ti si na potezu! Izaberi slovo:</p>
       
-      <div id="letters-grid" class="letters-grid"></div>
+      <div id="letters-grid" class="letters-grid">
+        <button class="letter-btn">A</button>
+        <button class="letter-btn">B</button>
+        <button class="letter-btn">C</button>
+        <button class="letter-btn">Č</button>
+        <button class="letter-btn">Ć</button>
+        <button class="letter-btn">D</button>
+        <button class="letter-btn">Đ</button>
+        <button class="letter-btn">E</button>
+        <button class="letter-btn">F</button>
+        <button class="letter-btn">G</button>
+        <button class="letter-btn">H</button>
+        <button class="letter-btn">I</button>
+        <button class="letter-btn">J</button>
+        <button class="letter-btn">K</button>
+        <button class="letter-btn">L</button>
+        <button class="letter-btn">M</button>
+        <button class="letter-btn">N</button>
+        <button class="letter-btn">O</button>
+        <button class="letter-btn">P</button>
+        <button class="letter-btn">R</button>
+        <button class="letter-btn">S</button>
+        <button class="letter-btn">Š</button>
+        <button class="letter-btn">T</button>
+        <button class="letter-btn">U</button>
+        <button class="letter-btn">V</button>
+        <button class="letter-btn">Z</button>
+        <button class="letter-btn">Ž</button>
+        <button class="letter-btn used" disabled>Lj</button>
+        <button class="letter-btn used" disabled>Nj</button>
+      </div>
       
-      <div id="spectator-message" class="hidden">
+      <div id="spectator-message">
         <p>Čekanje izbora slova...</p>
       </div>
     </section>
@@ -79,13 +134,42 @@
     <section id="play-screen" class="screen">
       <div class="game-header">
         <div>
-          <h2>Slovo: <span id="current-letter" class="highlight"></span></h2>
-          <div id="timer" class="timer">60</div>
+          <h2>Slovo: <span id="current-letter" class="highlight">P</span></h2>
+          <div id="timer" class="timer">42</div>
         </div>
       </div>
       
       <form id="answers-form">
-        <div id="categories-inputs" class="categories-inputs"></div>
+        <div id="categories-inputs" class="categories-inputs">
+          <div class="category-input">
+            <label>Država</label>
+            <input type="text" placeholder="Država na P..." data-category="Država">
+          </div>
+          <div class="category-input">
+            <label>Grad</label>
+            <input type="text" placeholder="Grad na P..." data-category="Grad">
+          </div>
+          <div class="category-input">
+            <label>Reka</label>
+            <input type="text" placeholder="Reka na P..." data-category="Reka">
+          </div>
+          <div class="category-input">
+            <label>Planina</label>
+            <input type="text" placeholder="Planina na P..." data-category="Planina">
+          </div>
+          <div class="category-input">
+            <label>Životinja</label>
+            <input type="text" placeholder="Životinja na P..." data-category="Životinja">
+          </div>
+          <div class="category-input">
+            <label>Biljka</label>
+            <input type="text" placeholder="Biljka na P..." data-category="Biljka">
+          </div>
+          <div class="category-input">
+            <label>Hrana</label>
+            <input type="text" placeholder="Hrana na P..." data-category="Hrana">
+          </div>
+        </div>
         <button type="submit" id="submit-btn" class="btn primary">Pošalji odgovore</button>
       </form>
     </section>
@@ -93,35 +177,109 @@
     <!-- Ekran rezultata runde -->
     <section id="round-results-screen" class="screen">
       <h2>Rezultati runde</h2>
-      <p>Slovo: <span id="result-letter" class="highlight"></span></p>
+      <p>Slovo: <span id="result-letter" class="highlight">P</span></p>
       
-      <div id="validation-controls" class="validation-controls hidden">
+      <div id="validation-controls" class="validation-controls">
         <p>Oceni odgovore za validnost:</p>
         <button id="validate-btn" class="btn primary">Potvrdi ocenjivanje</button>
       </div>
       
       <div id="results-table-container" class="results-table-container">
-        <table id="results-table" class="results-table"></table>
+        <table id="results-table" class="results-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Player1</th>
+              <th>Player2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: bold;">Država</td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span>Poljska</span>
+                  <button class="validation-btn valid active"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span>Portugal</span>
+                  <button class="validation-btn valid active"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold;">Grad</td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span>Pariz</span>
+                  <button class="validation-btn valid active"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span>Prag</span>
+                  <button class="validation-btn valid active"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold;">Reka</td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span>Po</span>
+                  <button class="validation-btn valid active"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+              <td class="answer-cell">
+                <div class="answer-validation">
+                  <span></span>
+                  <button class="validation-btn valid"><i class="fas fa-check"></i></button>
+                  <button class="validation-btn invalid active"><i class="fas fa-times"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       
       <div class="next-round-controls">
-        <p id="next-player-message"></p>
-        <button id="next-round-btn" class="btn primary hidden">Sledeća runda</button>
+        <p id="next-player-message">Sledeći na potezu: Player2</p>
+        <button id="next-round-btn" class="btn primary">Sledeća runda</button>
       </div>
     </section>
     
     <!-- Ekran finalnih rezultata -->
     <section id="final-results-screen" class="screen">
       <h2>Kraj igre</h2>
-      <div id="winner-display" class="winner-display"></div>
+      <div id="winner-display" class="winner-display">
+        <h3>Pobednik</h3>
+        <div class="winner-name">Player1</div>
+        <div>85 poena</div>
+      </div>
       
-      <div id="final-scores" class="final-scores"></div>
+      <div id="final-scores" class="final-scores">
+        <div class="final-scores-item">
+          <span>1. Player1</span>
+          <span class="final-score-value">85 poena</span>
+        </div>
+        <div class="final-scores-item">
+          <span>2. Player2</span>
+          <span class="final-score-value">70 poena</span>
+        </div>
+      </div>
       
       <button id="new-game-btn" class="btn primary">Nova igra</button>
     </section>
     
     <!-- Notifikacije -->
-    <div id="notification" class="notification"></div>
+    <div id="notification" class="notification">Uspešno ste se pridružili igri!</div>
   </div>
   
   <script src="/socket.io/socket.io.js"></script>
