@@ -25,7 +25,7 @@
       </div>
       
       <!-- Debug info - sakriven po default-u -->
-      <div id="debug-info" class="debug-info" style="display: block; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+      <div id="debug-info" class="debug-info" style="display: none; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
         <h3 style="margin-bottom: 10px;">Debug Info</h3>
         <p>Socket ID: <span id="debug-socket-id">Nepovezan</span></p>
         <p>Status: <span id="debug-status">Čekanje</span></p>
@@ -34,7 +34,7 @@
       </div>
       
       <!-- Debugger dugme -->
-      <button id="show-debug-btn" class="btn-icon" style="margin-top: 20px; padding: 5px; font-size: 12px;">Sakrij debugger</button>
+      <button id="show-debug-btn" class="btn-icon" style="margin-top: 20px; padding: 5px; font-size: 12px;">Prikaži debugger</button>
     </section>
     
     <!-- Ekran čekaonice -->
@@ -63,24 +63,68 @@
       </div>
     </section>
     
+    <!-- Ekran izbora slova -->
+    <section id="letter-selection-screen" class="screen">
+      <h2>Izaberi slovo</h2>
+      <p id="current-player-message"></p>
+      
+      <div id="letters-grid" class="letters-grid"></div>
+      
+      <div id="spectator-message" class="hidden">
+        <p>Čekanje izbora slova...</p>
+      </div>
+    </section>
+    
+    <!-- Ekran unosa odgovora -->
+    <section id="play-screen" class="screen">
+      <div class="game-header">
+        <div>
+          <h2>Slovo: <span id="current-letter" class="highlight"></span></h2>
+          <div id="timer" class="timer">60</div>
+        </div>
+      </div>
+      
+      <form id="answers-form">
+        <div id="categories-inputs" class="categories-inputs"></div>
+        <button type="submit" id="submit-btn" class="btn primary">Pošalji odgovore</button>
+      </form>
+    </section>
+    
+    <!-- Ekran rezultata runde -->
+    <section id="round-results-screen" class="screen">
+      <h2>Rezultati runde</h2>
+      <p>Slovo: <span id="result-letter" class="highlight"></span></p>
+      
+      <div id="validation-controls" class="validation-controls hidden">
+        <p>Oceni odgovore za validnost:</p>
+        <button id="validate-btn" class="btn primary">Potvrdi ocenjivanje</button>
+      </div>
+      
+      <div id="results-table-container" class="results-table-container">
+        <table id="results-table" class="results-table"></table>
+      </div>
+      
+      <div class="next-round-controls">
+        <p id="next-player-message"></p>
+        <button id="next-round-btn" class="btn primary hidden">Sledeća runda</button>
+      </div>
+    </section>
+    
+    <!-- Ekran finalnih rezultata -->
+    <section id="final-results-screen" class="screen">
+      <h2>Kraj igre</h2>
+      <div id="winner-display" class="winner-display"></div>
+      
+      <div id="final-scores" class="final-scores"></div>
+      
+      <button id="new-game-btn" class="btn primary">Nova igra</button>
+    </section>
+    
     <!-- Notifikacije -->
     <div id="notification" class="notification"></div>
   </div>
   
-  <!-- Učitaj biblioteke -->
   <script src="/socket.io/socket.io.js"></script>
-  <script>
-    // Test Script da vidimo da li je socket.io ispravno učitan
-    console.log('Test: Socket.IO je dostupan:', typeof io !== 'undefined');
-    
-    window.onerror = function(message, source, lineno, colno, error) {
-      console.error(`Error: ${message} at ${source}:${lineno}:${colno}`);
-      document.getElementById('debug-events').innerHTML = 
-        `<p>ERROR: ${message} at line ${lineno}</p>` + 
-        document.getElementById('debug-events').innerHTML;
-      return false;
-    };
-  </script>
   <script src="app.js"></script>
 </body>
 </html>
