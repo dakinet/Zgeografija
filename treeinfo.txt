@@ -1,12 +1,20 @@
 zanimljiva-geografija/
 │
 ├── public/                  # Folder za statičke fajlove
-│   ├── index.html           # Glavna HTML stranica
+│   ├── index.html           # Glavni HTML fajl
 │   ├── styles.css           # CSS stilovi
-│   └── app.js               # Klijentski JavaScript
+│   ├── app.js               # Glavni JavaScript fajl
+│   └── modules/             # JavaScript moduli
+│       ├── constants.js     # Konstantne vrednosti
+│       ├── debugger.js      # Modul za debugiranje
+│       ├── gameActions.js   # Akcije u igri
+│       ├── gameState.js     # Stanje igre
+│       ├── socket.js        # Socket.io komunikacija
+│       ├── ui.js            # UI funkcionalnosti
+│       └── utils.js         # Pomoćne funkcije
 │
-├── server.js                # Glavni Node.js server fajl
-├── package.json             # Konfiguracija projekta i dependencije
-├── .gitignore               # Fajlovi koji se ignorišu u git-u
-├── LICENSE                  # MIT licenca
+├── server.js                # Server Node.js
+├── package.json             # Konfiguracija projekta
+├── render.yaml              # Konfiguracija za Render
+├── .gitignore               # Git ignore fajl
 └── README.md                # Dokumentacija projekta
