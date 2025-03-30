@@ -1,0 +1,12 @@
+zanimljiva-geografija/
+│
+├── public/                  # Folder za statičke fajlove
+│   ├── index.html           # Glavna HTML stranica
+│   ├── styles.css           # CSS stilovi
+│   └── app.js               # Klijentski JavaScript
+│
+├── server.js                # Glavni Node.js server fajl
+├── package.json             # Konfiguracija projekta i dependencije
+├── .gitignore               # Fajlovi koji se ignorišu u git-u
+├── LICENSE                  # MIT licenca
+└── README.md                # Dokumentacija projekta

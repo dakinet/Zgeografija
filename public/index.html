@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Zanimljiva Geografija</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Početni ekran -->
+    <section id="welcome-screen" class="screen active">
+      <h1>Zanimljiva Geografija</h1>
+      <div class="form-group">
+        <input type="text" id="username-input" placeholder="Unesi svoje ime" maxlength="20">
+      </div>
+      <div class="buttons">
+        <button id="create-game-btn" class="btn primary">Kreiraj igru</button>
+        <div class="divider">ili</div>
+        <div class="form-group">
+          <input type="text" id="game-id-input" placeholder="Unesi kod igre" maxlength="6">
+          <button id="join-game-btn" class="btn secondary">Pridruži se</button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Ekran čekaonice -->
+    <section id="lobby-screen" class="screen">
+      <h2>Čekaonica</h2>
+      <div class="game-info">
+        <p>Kod igre: <span id="game-id-display" class="highlight"></span></p>
+        <button id="copy-game-id" class="btn-icon" title="Kopiraj kod">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      
+      <div class="players-container">
+        <h3>Igrači</h3>
+        <ul id="players-list"></ul>
+      </div>
+      
+      <div class="categories-container">
+        <h3>Kategorije</h3>
+        <ul id="categories-list"></ul>
+      </div>
+      
+      <div class="lobby-controls">
+        <button id="ready-btn" class="btn primary">Spreman</button>
+        <p id="waiting-message" class="hidden">Čekanje ostalih igrača...</p>
+      </div>
+    </section>
+    
+    <!-- Ekran izbora slova -->
+    <section id="letter-selection-screen" class="screen">
+      <h2>Izaberi slovo</h2>
+      <p id="current-player-message"></p>
+      
+      <div id="letters-grid" class="letters-grid"></div>
+      
+      <div id="spectator-message" class="hidden">
+        <p>Čekanje izbora slova...</p>
+      </div>
+    </section>
+    
+    <!-- Ekran unosa odgovora -->
+    <section id="play-screen" class="screen">
+      <div class="game-header">
+        <div>
+          <h2>Slovo: <span id="current-letter" class="highlight"></span></h2>
+          <div id="timer" class="timer">60</div>
+        </div>
+      </div>
+      
+      <form id="answers-form">
+        <div id="categories-inputs" class="categories-inputs"></div>
+        <button type="submit" id="submit-btn" class="btn primary">Pošalji odgovore</button>
+      </form>
+    </section>
+    
+    <!-- Ekran rezultata runde -->
+    <section id="round-results-screen" class="screen">
+      <h2>Rezultati runde</h2>
+      <p>Slovo: <span id="result-letter" class="highlight"></span></p>
+      
+      <div id="validation-controls" class="validation-controls hidden">
+        <p>Oceni odgovore za validnost:</p>
+        <button id="validate-btn" class="btn primary">Potvrdi ocenjivanje</button>
+      </div>
+      
+      <div id="results-table-container" class="results-table-container">
+        <table id="results-table" class="results-table"></table>
+      </div>
+      
+      <div class="next-round-controls">
+        <p id="next-player-message"></p>
+        <button id="next-round-btn" class="btn primary hidden">Sledeća runda</button>
+      </div>
+    </section>
+    
+    <!-- Ekran finalnih rezultata -->
+    <section id="final-results-screen" class="screen">
+      <h2>Kraj igre</h2>
+      <div id="winner-display" class="winner-display"></div>
+      
+      <div id="final-scores" class="final-scores"></div>
+      
+      <button id="new-game-btn" class="btn primary">Nova igra</button>
+    </section>
+    
+    <!-- Notifikacije -->
+    <div id="notification" class="notification"></div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
