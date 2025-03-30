@@ -33,25 +33,35 @@ app.get('/', (req, res) => {
 
 // API ruta za status servera
 app.get('/api/status', (req, res) => {
-  res.json({
-    status: 'ok',
-    uptime: process.uptime(),
-    activeGames: gameManager.getActiveGamesCount(),
-    connectedPlayers: gameManager.getConnectedPlayersCount(),
-    serverTime: new Date().toISOString()
-  });
+  try {
+    res.json({
+      status: 'ok',
+      uptime: process.uptime(),
+      activeGames: gameManager.getActiveGamesCount(),
+      connectedPlayers: gameManager.getConnectedPlayersCount(),
+      serverTime: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Greška pri dohvatanju statusa', { error: error.message });
+    res.status(500).json({ error: 'Interna greška servera' });
+  }
 });
 
 // API ruta za dobijanje informacija o igri (samo u dev modu)
 if (config.isDevelopment) {
   app.get('/api/games/:id', (req, res) => {
-    const gameId = req.params.id;
-    const gameData = gameManager.getGameInfo(gameId);
-    
-    if (gameData) {
-      res.json(gameData);
-    } else {
-      res.status(404).json({ error: 'Igra nije pronađena' });
+    try {
+      const gameId = req.params.id;
+      const gameData = gameManager.getGameInfo(gameId);
+      
+      if (gameData) {
+        res.json(gameData);
+      } else {
+        res.status(404).json({ error: 'Igra nije pronađena' });
+      }
+    } catch (error) {
+      logger.error('Greška pri dohvatanju informacija o igri', { error: error.message });
+      res.status(500).json({ error: 'Interna greška servera' });
     }
   });
 }
@@ -76,12 +86,17 @@ io.on('connection', (socket) => {
 });
 
 // Periodično čišćenje neaktivnih igara
+const cleanupInterval = config.inactiveGameCleanupInterval || 15 * 60 * 1000; // Default 15 minuta
 setInterval(() => {
-  const cleanedGames = gameManager.cleanInactiveGames();
-  if (cleanedGames > 0) {
-    logger.info(`Očišćeno ${cleanedGames} neaktivnih igara`);
+  try {
+    const cleanedGames = gameManager.cleanInactiveGames();
+    if (cleanedGames > 0) {
+      logger.info(`Očišćeno ${cleanedGames} neaktivnih igara`);
+    }
+  } catch (error) {
+    logger.error('Greška pri čišćenju neaktivnih igara', { error: error.message });
   }
-}, config.inactiveGameCleanupInterval);
+}, cleanupInterval);
 
 // Obrada greške servera
 server.on('error', (error) => {
@@ -95,8 +110,8 @@ server.on('error', (error) => {
 });
 
 // Startovanje servera
-const PORT = process.env.PORT || config.defaultPort;
+const PORT = process.env.PORT || (config.defaultPort || 3000);
 server.listen(PORT, () => {
-  logger.info(`Server je pokrenut na portu ${PORT} u ${config.environment} modu`);
+  logger.info(`Server je pokrenut na portu ${PORT} u ${config.environment || 'development'} modu`);
   console.log(`Server je pokrenut na portu ${PORT}`);
 });
