@@ -1,0 +1,152 @@
+# Struktura serverske strane za "Zanimljivu Geografiju"
+
+Serverska strana aplikacije implementirana je pomoću Node.js, Express i Socket.IO, sa modularnom strukturom koja omogućava lakše održavanje i proširivanje.
+
+## Glavni server (server.js)
+
+`server.js` je ulazna tačka aplikacije i odgovoran je za:
+- Inicijalizaciju Express aplikacije
+- Postavljanje Socket.IO
+- Povezivanje sa modulima
+- Serviranje statičkih fajlova
+- Obezbeđivanje API endpointa za status servera
+- Pokretanje servera na određenom portu
+
+## Struktura direktorijuma
+
+```
+zanimljiva-geografija/
+│
+├── server/                      # Server modules
+│   ├── config.js                # Konfiguracija servera
+│   ├── eventHandlers.js         # Socket.IO event handleri
+│   ├── gameManager.js           # Upravljanje igrama
+│   ├── gameRoom.js              # Klasa za jednu igru
+│   ├── logger.js                # Sistem za logovanje
+│   ├── utils.js                 # Pomoćne funkcije
+│   └── validation.js            # Validacija podataka
+│
+├── public/                      # Klijentski fajlovi
+│   ├── index.html
+│   ├── styles.css
+│   ├── app.js
+│   └── modules/                 # Klijentski JavaScript moduli
+│
+├── logs/                        # Folder za logove
+├── server.js                    # Glavni server fajl
+├── package.json
+└── README.md
+```
+
+## Moduli servera
+
+### 1. config.js
+Sadrži konfiguraciju servera i aplikacije, uključujući:
+- Osnovne postavke servera
+- Postavke igre (trajanje runde, broj igrača, itd.)
+- Podrazumevane kategorije
+- Srpski alfabet
+- Postavke logovanja
+
+### 2. logger.js
+Sistem za strukturirano logovanje događaja u aplikaciji:
+- Logovanje u konzolu i fajlove
+- Različiti nivoi logovanja (error, warn, info, debug)
+- Formatiranje logova
+- Logovi specifični za igru
+
+### 3. gameManager.js
+Upravlja svim aktivnim igrama na serveru:
+- Kreiranje novih igara
+- Pridruživanje igrača postojećim igrama
+- Pronalaženje igara po ID-u ili Socket ID-u
+- Uklanjanje igara
+- Čišćenje neaktivnih igara
+- Upravljanje diskonektovanjem igrača
+
+### 4. gameRoom.js
+Klasa koja predstavlja jednu sobu/igru:
+- Upravlja igračima (dodavanje, uklanjanje)
+- Upravlja stanjem igre (čekanje, igranje, rezultati)
+- Implementira logiku igre (izbor slova, slanje odgovora, validacija)
+- Čuva podatke o rundama
+- Izračunava bodove
+- Određuje pobednika
+
+### 5. eventHandlers.js
+Obrađuje Socket.IO događaje:
+- Kreiranje igre
+- Pridruživanje igri
+- Status "spreman"
+- Izbor slova
+- Slanje odgovora
+- Validaciju odgovora
+- Sledeću rundu
+- Novu igru
+
+### 6. validation.js
+Validacija podataka koja se šalju od klijenata:
+- Validacija korisničkog imena
+- Validacija ID-a igre
+- Validacija slova
+- Validacija odgovora
+- Validacija validacije odgovora
+
+### 7. utils.js
+Pomoćne funkcije koje se koriste u različitim delovima aplikacije:
+- Generisanje ID-a igre
+- Formatiranje datuma i vremena
+- Manipulaciju nizovima
+- Merenje performansi
+- Ograničavanje izvršavanja funkcija
+
+## Tok igre
+
+1. **Kreiranje igre**
+   - Korisnik kreira igru sa korisničkim imenom
+   - Server kreira novu GameRoom instancu
+   - Server dodeljuje jedinstveni ID igri
+   - Server vraća ID igre klijentu
+
+2. **Pridruživanje igri**
+   - Korisnik se pridružuje igri sa korisničkim imenom i ID-om igre
+   - Server proverava da li igra postoji i dozvoljava pridruživanje
+   - Server dodaje igrača u igru
+   - Server obaveštava sve igrače o novom igraču
+
+3. **Početak igre**
+   - Svi igrači označavaju da su spremni
+   - Server proverava da li su svi igrači spremni
+   - Server menja status igre na 'letter_selection'
+   - Server određuje prvog igrača na potezu
+
+4. **Izbor slova**
+   - Igrač na potezu bira slovo
+   - Server validira slovo
+   - Server menja status igre na 'playing'
+   - Server pokreće timer za rundu
+
+5. **Unos odgovora**
+   - Igrači unose odgovore za kategorije
+   - Igrači šalju odgovore serveru
+   - Server validira odgovore
+   - Kada svi igrači pošalju odgovore ili istekne vreme, server završava rundu
+
+6. **Rezultati runde**
+   - Server prikazuje sve odgovore
+   - Domaćin validira odgovore
+   - Server dodeljuje bodove prema validacijama
+   - Server proverava da li je kraj igre
+
+7. **Nova runda/kraj igre**
+   - Ako nije kraj igre, server priprema novu rundu
+   - Server prebacuje potez na sledećeg igrača
+   - Ako je kraj igre, server prikazuje konačne rezultate
+
+## Prednosti ove arhitekture
+
+1. **Modularnost**: Svaki deo sistema ima jasno definisanu odgovornost.
+2. **Skalabilnost**: Može se lako proširiti na više servera ili dodati nova funkcionalnost.
+3. **Održivost**: Kod je organizovan na način koji olakšava održavanje i debugging.
+4. **Pouzdanost**: Implementirano je rukovanje greškama i validacija podataka.
+5. **Praćenje**: Sistem logovanja omogućava praćenje rada aplikacije.
