@@ -1,8 +1,42 @@
-// Inicijalizacija Socket.io konekcije
+});// Inicijalizacija Socket.io konekcije
 const socket = io();
 
 // Glavne komponente aplikacije
 document.addEventListener('DOMContentLoaded', () => {
+  // Debugger komponente
+  const debugSocketId = document.getElementById('debug-socket-id');
+  const debugStatus = document.getElementById('debug-status');
+  const debugEvents = document.getElementById('debug-events');
+  const showDebugBtn = document.getElementById('show-debug-btn');
+  const debugToggleBtn = document.getElementById('debug-toggle-btn');
+  const debugInfo = document.getElementById('debug-info');
+  
+  // Debug funkcije
+  function addDebugEvent(event) {
+    const timestamp = new Date().toLocaleTimeString();
+    debugEvents.innerHTML = `<strong>${timestamp}</strong>: ${event}<br>` + debugEvents.innerHTML;
+    if (debugEvents.innerHTML.split('<br>').length > 10) {
+      debugEvents.innerHTML = debugEvents.innerHTML.split('<br>').slice(0, 10).join('<br>');
+    }
+  }
+  
+  showDebugBtn.addEventListener('click', () => {
+    debugInfo.style.display = 'block';
+    showDebugBtn.style.display = 'none';
+  });
+  
+  debugToggleBtn.addEventListener('click', () => {
+    if (debugInfo.style.display === 'block') {
+      debugInfo.style.display = 'none';
+      debugToggleBtn.textContent = 'Prikaži Debug';
+      showDebugBtn.style.display = 'block';
+    } else {
+      debugInfo.style.display = 'block';
+      debugToggleBtn.textContent = 'Sakrij Debug';
+      showDebugBtn.style.display = 'none';
+    }
+  });
+
   // DOM elementi
   const screens = {
     welcome: document.getElementById('welcome-screen'),
@@ -58,7 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     answers: {},
     roundEnded: false,
     validationData: {},
-    flagsCache: {} // Keš za zastave
+    flagsCache: {}, // Keš za zastave
+    heartbeatInterval: null
   };
 
   // Pomoćne funkcije
@@ -140,6 +175,15 @@ document.addEventListener('DOMContentLoaded', () => {
     gameIdDisplay.textContent = gameState.gameId;
     updatePlayersList(data.players);
     updateCategoriesList(data.categories);
+    
+    // Postavi heartbeat interval kad se priključi igri
+    if (!gameState.heartbeatInterval) {
+      gameState.heartbeatInterval = setInterval(() => {
+        socket.emit('heartbeat');
+      }, 30000); // Na svakih 30 sekundi
+      
+      addDebugEvent('Heartbeat interval pokrenut');
+    }
   }
 
   function updatePlayersList(players) {
@@ -615,30 +659,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Socket.io event handleri
   socket.on('connect', () => {
+    console.log('Povezan na server sa ID:', socket.id);
     gameState.myId = socket.id;
+    
+    // Debug info
+    debugSocketId.textContent = socket.id;
+    debugStatus.textContent = 'Povezan';
+    addDebugEvent('Povezan na server');
+  });
+  
+  socket.on('disconnect', () => {
+    debugStatus.textContent = 'Prekinuta veza';
+    addDebugEvent('Veza sa serverom prekinuta');
+  });
+  
+  socket.on('connect_error', (error) => {
+    console.error('Greška pri povezivanju:', error);
+    debugStatus.textContent = 'Greška pri povezivanju';
+    addDebugEvent(`Greška: ${error.message}`);
   });
 
   socket.on('gameCreated', (data) => {
+    console.log('Primljen gameCreated event:', data);
     gameState.gameId = data.gameId;
     gameState.players = data.players;
     gameState.categories = data.categories;
     
     setupLobby(data);
     showScreen('lobby');
+    
+    // Debug info
+    addDebugEvent(`Igra kreirana: ${data.gameId}`);
   });
   
   socket.on('gameJoined', (data) => {
+    console.log('Primljen gameJoined event:', data);
     gameState.gameId = data.gameId;
     gameState.players = data.players;
     gameState.categories = data.categories;
     
     setupLobby(data);
     showScreen('lobby');
+    
+    // Resetujemo stanje dugmeta
+    joinGameBtn.disabled = false;
+    joinGameBtn.textContent = 'Pridruži se';
+    
+    // Prikažimo potvrdu
+    showNotification('Uspešno ste se pridružili igri!');
+    
+    // Debug info
+    addDebugEvent(`Pridružen igri: ${data.gameId}`);
   });
 
   socket.on('playerJoined', (data) => {
+    console.log('Primljen playerJoined event:', data);
     gameState.players = data.players;
     updatePlayersList(data.players);
+    
+    // Prikaži notifikaciju o novom igraču
+    const newPlayer = data.players[data.players.length - 1];
+    showNotification(`${newPlayer.username} se pridružio igri!`);
+    
+    // Debug info
+    addDebugEvent(`Igrač ${newPlayer.username} se pridružio`);
   });
 
   socket.on('playersUpdate', (data) => {
@@ -685,6 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   socket.on('error', (message) => {
+    console.error('Primljena greška od servera:', message);
     showNotification(message);
     
     // Vrati dugmad u normalno stanje
@@ -692,13 +777,20 @@ document.addEventListener('DOMContentLoaded', () => {
     joinGameBtn.textContent = 'Pridruži se';
     
     createGameBtn.disabled = false;
-    readyBtn.disabled = false;
+    if (readyBtn) readyBtn.disabled = false;
+    
+    // Debug info
+    addDebugEvent(`Greška: ${message}`);
   });
 
   socket.on('playerLeft', (data) => {
+    console.log('Igrač napustio igru:', data);
     gameState.players = data.players;
     updatePlayersList(data.players);
     showNotification(`${data.username} je napustio igru.`);
+    
+    // Debug info
+    addDebugEvent(`Igrač ${data.username} napustio igru`);
   });
 
   // Povratak na početnu stranicu
@@ -713,4 +805,27 @@ document.addEventListener('DOMContentLoaded', () => {
       flagContainer.style.display = 'none';
     }
   });
-});
+  
+  // Postavljanje event listenera za otkrivanje promene veze
+  window.addEventListener('online', () => {
+    debugStatus.textContent = 'Online';
+    addDebugEvent('Ponovo povezan');
+    
+    // Pokušaj ponovo povezati socket ako je prekinuta veza
+    if (socket.disconnected && gameState.gameId) {
+      socket.connect();
+      addDebugEvent('Pokušaj ponovnog povezivanja...');
+    }
+  });
+  
+  window.addEventListener('offline', () => {
+    debugStatus.textContent = 'Offline';
+    addDebugEvent('Prekinuta veza');
+  });
+  
+  // Čisti heartbeat interval kad se stranica zatvori
+  window.addEventListener('beforeunload', () => {
+    if (gameState.heartbeatInterval) {
+      clearInterval(gameState.heartbeatInterval);
+    }
+  });

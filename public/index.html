@@ -23,6 +23,18 @@
           <button id="join-game-btn" class="btn secondary">Pridruži se</button>
         </div>
       </div>
+      
+      <!-- Debug info - sakriven po default-u -->
+      <div id="debug-info" class="debug-info" style="display: none; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+        <h3 style="margin-bottom: 10px;">Debug Info</h3>
+        <p>Socket ID: <span id="debug-socket-id">Nepovezan</span></p>
+        <p>Status: <span id="debug-status">Čekanje</span></p>
+        <p>Events: <span id="debug-events"></span></p>
+        <button id="debug-toggle-btn" class="btn-icon" style="margin-top: 10px;">Sakrij Debug</button>
+      </div>
+      
+      <!-- Debugger dugme -->
+      <button id="show-debug-btn" class="btn-icon" style="margin-top: 20px; padding: 5px; font-size: 12px;">Prikaži debugger</button>
     </section>
     
     <!-- Ekran čekaonice -->

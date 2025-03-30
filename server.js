@@ -27,15 +27,40 @@ const categories = [
 
 const allLetters = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWXYZ'.split('');
 let games = {}; // Čuvanje aktivnih igara
+let connections = {}; // Praćenje aktivnih konekcija
 
 // Ruta za glavnu stranicu
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Ruta za status servera
+app.get('/status', (req, res) => {
+  const activeGames = Object.keys(games).length;
+  const activePlayers = Object.values(games).reduce((total, game) => total + game.players.length, 0);
+  
+  res.json({
+    status: 'ok',
+    activeGames,
+    activePlayers,
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Socket.io logika
 io.on('connection', (socket) => {
   console.log('Novi korisnik se povezao:', socket.id);
+  connections[socket.id] = { lastActive: Date.now() };
+  
+  // Čuvamo instance povezanih korisnika
+  socket.on('heartbeat', () => {
+    if (socket.gameId && games[socket.gameId]) {
+      games[socket.gameId].lastActivity = Date.now();
+    }
+    connections[socket.id].lastActive = Date.now();
+  });
   
   // Kreiranje nove igre
   socket.on('createGame', (username) => {
@@ -58,19 +83,21 @@ io.on('connection', (socket) => {
       timePerRound: 60, // sekundi
       started: false,
       roundInProgress: false,
-      categories: [...categories]
+      categories: [...categories],
+      lastActivity: Date.now() // Dodajemo praćenje aktivnosti
     };
     
     socket.join(gameId);
     socket.gameId = gameId;
     
+    console.log(`Kreiranje igre: Igra ${gameId} kreirana za igrača ${username} (${socket.id})`);
     socket.emit('gameCreated', {
       gameId: gameId, 
       players: games[gameId].players,
       categories: games[gameId].categories
     });
     
-    console.log('Igra kreirana:', gameId);
+    console.log(`Igra kreirana: ${gameId}`);
   });
   
   // Pridruživanje postojećoj igri
@@ -229,6 +256,9 @@ io.on('connection', (socket) => {
   // Izlazak iz igre
   socket.on('disconnect', () => {
     const gameId = socket.gameId;
+    delete connections[socket.id];
+    console.log(`Korisnik se diskonektovao: ${socket.id}`);
+    
     if (!gameId || !games[gameId]) return;
     
     const playerIndex = games[gameId].players.findIndex(p => p.id === socket.id);
@@ -356,4 +386,35 @@ function endGame(gameId) {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server je pokrenut na portu ${PORT}`);
+  console.log(`Sve aktivne igre: ${Object.keys(games).length}`);
+  
+  // Dodajemo interval koji će periodično čistiti zastarele igre
+  setInterval(() => {
+    const now = Date.now();
+    let cleanedGames = 0;
+    let cleanedConnections = 0;
+    
+    // Čišćenje zastarelih igara
+    Object.keys(games).forEach(gameId => {
+      const game = games[gameId];
+      // Brisanje igara koje su neaktivne duže od 2 sata
+      if (game.lastActivity && (now - game.lastActivity > 2 * 60 * 60 * 1000)) {
+        delete games[gameId];
+        cleanedGames++;
+      }
+    });
+    
+    // Čišćenje zastarelih konekcija
+    Object.keys(connections).forEach(socketId => {
+      if (now - connections[socketId].lastActive > 30 * 60 * 1000) { // 30 minuta
+        delete connections[socketId];
+        cleanedConnections++;
+      }
+    });
+    
+    if (cleanedGames > 0 || cleanedConnections > 0) {
+      console.log(`Čišćenje: Obrisano ${cleanedGames} neaktivnih igara i ${cleanedConnections} neaktivnih konekcija.`);
+      console.log(`Preostalo igara: ${Object.keys(games).length}, konekcija: ${Object.keys(connections).length}`);
+    }
+  }, 10 * 60 * 1000); // Provera na svakih 10 minuta
 });
