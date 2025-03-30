@@ -1,493 +1,501 @@
 /* Osnovni stilovi */
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  
-  :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
-    --accent-color: #f39c12;
-    --danger-color: #e74c3c;
-    --text-color: #333;
-    --bg-color: #f5f5f5;
-    --card-bg: #ffffff;
-    --disabled-color: #bdc3c7;
-    --border-color: #ddd;
-    --highlight-color: #3498db;
-  }
-  
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    line-height: 1.6;
-  }
-  
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #f39c12;
+  --danger-color: #e74c3c;
+  --text-color: #333;
+  --bg-color: #f5f5f5;
+  --card-bg: #ffffff;
+  --disabled-color: #bdc3c7;
+  --border-color: #ddd;
+  --highlight-color: #3498db;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+h1, h2, h3 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+h1 {
+  color: var(--primary-color);
+  font-size: 2.5rem;
+  margin-top: 2rem;
+}
+
+h2 {
+  font-size: 1.8rem;
+  color: var(--text-color);
+}
+
+h3 {
+  font-size: 1.3rem;
+  color: var(--text-color);
+}
+
+.highlight {
+  color: var(--highlight-color);
+  font-weight: bold;
+}
+
+/* Forme i inputi */
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="text"] {
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+}
+
+.btn, button[type="submit"] {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  font-weight: bold;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn.secondary {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.btn.danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn:disabled, 
+button[type="submit"]:disabled {
+  background-color: var(--disabled-color);
+  cursor: not-allowed;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--primary-color);
+  padding: 5px;
+}
+
+.divider {
+  text-align: center;
+  margin: 20px 0;
+  font-weight: bold;
+  color: #777;
+}
+
+/* Ekrani */
+.screen {
+  display: none;
+  flex-direction: column;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  min-height: 70vh;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* Čekaonica */
+.game-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background-color: #f5f7fa;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.players-container, 
+.categories-container {
+  margin-bottom: 30px;
+}
+
+#players-list, 
+#categories-list {
+  list-style: none;
+}
+
+#players-list li, 
+#categories-list li {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+}
+
+#players-list li:last-child, 
+#categories-list li:last-child {
+  border-bottom: none;
+}
+
+.player-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.player-name {
+  font-weight: bold;
+}
+
+.player-status {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.player-status.host {
+  background-color: #f1c40f;
+  color: #795548;
+}
+
+.player-status.ready {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.lobby-controls {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Grid slova */
+.letters-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.letter-btn {
+  padding: 15px;
+  background-color: var(--card-bg);
+  border: 2px solid var(--primary-color);
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.letter-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.letter-btn.used {
+  background-color: var(--disabled-color);
+  border-color: var(--disabled-color);
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* Igrački ekran */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.timer {
+  font-size: 2rem;
+  font-weight: bold;
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 8px;
+  background-color: var(--accent-color);
+  color: white;
+  margin-top: 10px;
+}
+
+.timer.warning {
+  background-color: var(--danger-color);
+  animation: pulse 1s infinite;
+}
+
+.categories-inputs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.category-input {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-input label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Rezultati */
+.results-table-container {
+  overflow-x: auto;
+  margin: 20px 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.results-table th,
+.results-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.results-table th {
+  background-color: #f5f7fa;
+  font-weight: bold;
+}
+
+.results-table tr:last-child td {
+  border-bottom: none;
+}
+
+.answer-cell {
+  position: relative;
+}
+
+.answer-validation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.validation-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: 10px;
+}
+
+.validation-btn.valid {
+  color: var(--secondary-color);
+}
+
+.validation-btn.invalid {
+  color: var(--danger-color);
+}
+
+.validation-btn.active {
+  font-weight: bold;
+  transform: scale(1.2);
+}
+
+.validation-controls {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Finalni rezultati */
+.winner-display {
+  text-align: center;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.winner-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 10px 0;
+}
+
+.final-scores {
+  margin: 20px 0;
+}
+
+.final-scores-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 10px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+}
+
+.final-score-value {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Notifikacije */
+.notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: none;
+  max-width: 90%;
+  text-align: center;
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Zastave */
+.flag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.flag-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px;
+  width: calc(33.33% - 10px);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.flag-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.flag-item.selected {
+  border-color: var(--primary-color);
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.flag-image {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+.flag-name {
+  margin-top: 5px;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Responsivnost za mobilne uređaje */
+@media (max-width: 768px) {
   .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    min-height: 100vh;
+    padding: 10px;
   }
-  
-  h1, h2, h3 {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
+
   h1 {
-    color: var(--primary-color);
-    font-size: 2.5rem;
-    margin-top: 2rem;
+    font-size: 2rem;
   }
-  
-  h2 {
-    font-size: 1.8rem;
-    color: var(--text-color);
-  }
-  
-  h3 {
-    font-size: 1.3rem;
-    color: var(--text-color);
-  }
-  
-  .highlight {
-    color: var(--highlight-color);
-    font-weight: bold;
-  }
-  
-  /* Forme i inputi */
-  .form-group {
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  input[type="text"] {
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1rem;
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  input[type="text"]:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-  }
-  
-  .btn, button[type="submit"] {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.1s;
-    font-weight: bold;
-    display: inline-block;
-    text-align: center;
-    width: 100%;
-  }
-  
-  .btn:active {
-    transform: scale(0.98);
-  }
-  
-  .btn.primary {
-    background-color: var(--primary-color);
-    color: white;
-  }
-  
-  .btn.secondary {
-    background-color: var(--secondary-color);
-    color: white;
-  }
-  
-  .btn.danger {
-    background-color: var(--danger-color);
-    color: white;
-  }
-  
-  .btn:disabled, 
-  button[type="submit"]:disabled {
-    background-color: var(--disabled-color);
-    cursor: not-allowed;
-  }
-  
-  .btn-icon {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    color: var(--primary-color);
-    padding: 5px;
-  }
-  
-  .divider {
-    text-align: center;
-    margin: 20px 0;
-    font-weight: bold;
-    color: #777;
-  }
-  
-  /* Ekrani */
+
   .screen {
-    display: none;
-    flex-direction: column;
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    min-height: 70vh;
+    padding: 15px;
   }
-  
-  .screen.active {
-    display: flex;
-  }
-  
-  /* Čekaonica */
-  .game-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    background-color: #f5f7fa;
-    padding: 10px;
-    border-radius: 8px;
-  }
-  
-  .players-container, 
-  .categories-container {
-    margin-bottom: 30px;
-  }
-  
-  #players-list, 
-  #categories-list {
-    list-style: none;
-  }
-  
-  #players-list li, 
-  #categories-list li {
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-  }
-  
-  #players-list li:last-child, 
-  #categories-list li:last-child {
-    border-bottom: none;
-  }
-  
-  .player-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .player-name {
-    font-weight: bold;
-  }
-  
-  .player-status {
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.8rem;
-  }
-  
-  .player-status.host {
-    background-color: #f1c40f;
-    color: #795548;
-  }
-  
-  .player-status.ready {
-    background-color: var(--secondary-color);
-    color: white;
-  }
-  
-  .lobby-controls {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  /* Grid slova */
+
   .letters-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-    margin: 20px 0;
-  }
-  
-  .letter-btn {
-    padding: 15px;
-    background-color: var(--card-bg);
-    border: 2px solid var(--primary-color);
-    border-radius: 8px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  
-  .letter-btn:hover {
-    background-color: var(--primary-color);
-    color: white;
-  }
-  
-  .letter-btn.used {
-    background-color: var(--disabled-color);
-    border-color: var(--disabled-color);
-    color: #777;
-    cursor: not-allowed;
-  }
-  
-  /* Igrački ekran */
-  .game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .timer {
-    font-size: 2rem;
-    font-weight: bold;
-    display: inline-block;
-    padding: 5px 15px;
-    border-radius: 8px;
-    background-color: var(--accent-color);
-    color: white;
-    margin-top: 10px;
-  }
-  
-  .timer.warning {
-    background-color: var(--danger-color);
-    animation: pulse 1s infinite;
-  }
-  
-  .categories-inputs {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-    overflow-y: auto;
-    max-height: 50vh;
-  }
-  
-  .category-input {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .category-input label {
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  /* Rezultati */
-  .results-table-container {
-    overflow-x: auto;
-    margin: 20px 0;
-    max-height: 50vh;
-    overflow-y: auto;
-  }
-  
-  .results-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .results-table th,
-  .results-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-  }
-  
-  .results-table th {
-    background-color: #f5f7fa;
-    font-weight: bold;
-  }
-  
-  .results-table tr:last-child td {
-    border-bottom: none;
-  }
-  
-  .answer-cell {
-    position: relative;
-  }
-  
-  .answer-validation {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .validation-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    margin-left: 10px;
-  }
-  
-  .validation-btn.valid {
-    color: var(--secondary-color);
-  }
-  
-  .validation-btn.invalid {
-    color: var(--danger-color);
-  }
-  
-  .validation-btn.active {
-    font-weight: bold;
-    transform: scale(1.2);
-  }
-  
-  .validation-controls {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  /* Finalni rezultati */
-  .winner-display {
-    text-align: center;
-    margin: 20px 0;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-  }
-  
-  .winner-name {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin: 10px 0;
-  }
-  
-  .final-scores {
-    margin: 20px 0;
-  }
-  
-  .final-scores-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-    margin-bottom: 10px;
-    background-color: #f5f7fa;
-    border-radius: 8px;
-  }
-  
-  .final-score-value {
-    font-weight: bold;
-    font-size: 1.2rem;
-  }
-  
-  /* Notifikacije */
-  .notification {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 15px 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    display: none;
-  }
-  
-  /* Zastave */
-  .flag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-    max-height: 200px;
-    overflow-y: auto;
+    grid-template-columns: repeat(4, 1fr);
   }
   
   .flag-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 10px;
-    width: calc(33.33% - 10px);
-    transition: transform 0.2s, box-shadow 0.2s;
+    width: calc(50% - 10px);
   }
   
-  .flag-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  }
-  
-  .flag-item.selected {
-    border-color: var(--primary-color);
-    background-color: rgba(52, 152, 219, 0.1);
-  }
-  
-  .flag-image {
-    width: 60px;
-    height: 40px;
-    object-fit: cover;
-    border: 1px solid #ddd;
-  }
-  
-  .flag-name {
-    margin-top: 5px;
-    font-size: 0.8rem;
-    text-align: center;
-  }
-  
-  /* Responsivnost za mobilne uređaje */
-  @media (max-width: 768px) {
-    .container {
-      padding: 10px;
-    }
-  
-    h1 {
-      font-size: 2rem;
-    }
-  
-    .screen {
-      padding: 15px;
-    }
-  
-    .letters-grid {
-      grid-template-columns: repeat(4, 1fr);
+  /* Prilagođavanje za tastature na mobilnim uređajima */
+  @media screen and (max-height: 600px) {
+    .categories-inputs {
+      max-height: 30vh;
     }
     
-    .flag-item {
-      width: calc(50% - 10px);
+    .results-table-container {
+      max-height: 30vh;
     }
     
-    /* Prilagođavanje za tastature na mobilnim uređajima */
-    @media screen and (max-height: 600px) {
-      .categories-inputs {
-        max-height: 30vh;
-      }
-      
-      .results-table-container {
-        max-height: 30vh;
-      }
-      
-      body {
-        padding-bottom: 50vh; /* Prostor za tastaturu */
-      }
+    body {
+      padding-bottom: 50vh; /* Prostor za tastaturu */
     }
   }
+}

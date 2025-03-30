@@ -105,7 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
     
     gameState.username = username;
     gameState.gameId = gameId;
+    
+    // Onemogući dugme dok se ne dobije odgovor od servera
+    joinGameBtn.disabled = true;
+    joinGameBtn.textContent = 'Pridruživanje...';
+    
     socket.emit('joinGame', { gameId, username });
+    
+    // Postavi timeout za vraćanje dugmeta u normalno stanje ako nema odgovora
+    setTimeout(() => {
+      joinGameBtn.disabled = false;
+      joinGameBtn.textContent = 'Pridruži se';
+    }, 5000);
   });
 
   copyGameIdBtn.addEventListener('click', () => {
@@ -615,6 +626,15 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLobby(data);
     showScreen('lobby');
   });
+  
+  socket.on('gameJoined', (data) => {
+    gameState.gameId = data.gameId;
+    gameState.players = data.players;
+    gameState.categories = data.categories;
+    
+    setupLobby(data);
+    showScreen('lobby');
+  });
 
   socket.on('playerJoined', (data) => {
     gameState.players = data.players;
@@ -666,6 +686,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   socket.on('error', (message) => {
     showNotification(message);
+    
+    // Vrati dugmad u normalno stanje
+    joinGameBtn.disabled = false;
+    joinGameBtn.textContent = 'Pridruži se';
+    
+    createGameBtn.disabled = false;
+    readyBtn.disabled = false;
   });
 
   socket.on('playerLeft', (data) => {
