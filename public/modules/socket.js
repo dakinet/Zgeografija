@@ -6,6 +6,11 @@ export let socket;
 
 // Funkcija za inicijalizaciju Socket.io konekcije
 export function initializeSocket() {
+  // Provera da li je Socket.io biblioteka učitana
+  if (typeof io === 'undefined') {
+    console.error('Socket.io biblioteka nije učitana!');
+    return null;
+    
   // Inicijalizacija Socket.io
   socket = io();
   
