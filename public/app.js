@@ -1,459 +1,123 @@
-// Glavni klijentski kod za Zanimljivu Geografiju
+// app.js - Glavni fajl za Zanimljiva Geografija igru
+import { initializeSocket, socket } from './modules/socket.js';
+import { gameState } from './modules/gameState.js';
+import { 
+  setupUI, 
+  showScreen, 
+  showNotification,
+  renderPlayersInLobby,
+  renderCategoriesInLobby,
+  renderLettersGrid,
+  renderCategoriesInputs,
+  renderResultsTable,
+  renderFinalResults
+} from './modules/ui.js';
+import { 
+  startTimer, 
+  submitAnswers, 
+  collectValidations
+} from './modules/gameActions.js';
+import { setupDebugger, logDebug } from './modules/debugger.js';
+
+// Čekaj učitavanje DOM-a pre inicijalizacije
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM učitan, inicijalizacija klijenta...');
   
-  // Socket.io inicijalizacija
-  const socket = io();
+  // Inicijalizacija Socket.io
+  initializeSocket();
   
-  // Globalni podaci igre
-  const gameState = {
-    gameId: null,
-    players: [],
-    categories: [],
-    currentLetter: null,
-    isHost: false,
-    username: null,
-    roundTime: 60,
-    timerInterval: null,
-    usedLetters: [],
-    answers: {},
-    submitted: false
-  };
+  // Postavljanje UI elemenata i eventova
+  setupUI();
   
-  // Element debugger-a
-  const debugInfo = document.getElementById('debug-info');
-  const debugSocketId = document.getElementById('debug-socket-id');
-  const debugStatus = document.getElementById('debug-status');
-  const debugEvents = document.getElementById('debug-events');
-  const showDebugBtn = document.getElementById('show-debug-btn');
+  // Postavljanje debuggera
+  setupDebugger();
   
-  // Glavni elementi
+  // Event listeneri za glavne akcije
+  setupEventListeners();
+  
+  // Inicijalizacija Socket.io listenera
+  setupSocketListeners();
+  
+  console.log('Klijent inicijalizovan');
+  logDebug('Klijent inicijalizovan i spreman');
+});
+
+// Funkcija za postavljanje glavnih event listenera
+function setupEventListeners() {
+  // Kreiraj igru
   const createGameBtn = document.getElementById('create-game-btn');
-  const joinGameBtn = document.getElementById('join-game-btn');
-  const usernameInput = document.getElementById('username-input');
-  const gameIdInput = document.getElementById('game-id-input');
-  const readyBtn = document.getElementById('ready-btn');
-  const copyGameIdBtn = document.getElementById('copy-game-id');
-  const debugToggleBtn = document.getElementById('debug-toggle-btn');
-  
-  // Pomoćne funkcije
-  function showScreen(screenId) {
-    document.querySelectorAll('.screen').forEach(screen => {
-      screen.classList.remove('active');
-    });
-    document.getElementById(screenId + '-screen').classList.add('active');
-    logDebug(`Prikaz ekrana: ${screenId}`);
-    
-    // Zaustavi timer kod promene ekrana
-    if (gameState.timerInterval) {
-      clearInterval(gameState.timerInterval);
-      gameState.timerInterval = null;
-    }
-  }
-  
-  function logDebug(event) {
-    const time = new Date().toLocaleTimeString();
-    if (debugEvents) {
-      debugEvents.innerHTML = `${time}: ${event}<br>` + debugEvents.innerHTML;
-    }
-    console.log(`[DEBUG] ${event}`);
-  }
-  
-  function showNotification(message) {
-    const notification = document.getElementById('notification');
-    if (notification) {
-      notification.textContent = message;
-      notification.style.display = 'block';
+  if (createGameBtn) {
+    createGameBtn.addEventListener('click', () => {
+      const usernameInput = document.getElementById('username-input');
+      const username = usernameInput?.value.trim();
       
-      // Autohide nakon 3 sekunde
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 3000);
-    }
-    logDebug(`Notifikacija: ${message}`);
-  }
-  
-  function renderPlayersInLobby() {
-    const playersList = document.getElementById('players-list');
-    if (!playersList) return;
-    
-    playersList.innerHTML = '';
-    
-    gameState.players.forEach(player => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        <div class="player-item">
-          <span class="player-name">${player.username}</span>
-          <div>
-            ${player.isHost ? '<span class="player-status host">Domaćin</span>' : ''}
-            ${player.ready ? '<span class="player-status ready">Spreman</span>' : ''}
-          </div>
-        </div>
-      `;
-      playersList.appendChild(li);
-    });
-    
-    logDebug(`Ažuriran prikaz igrača: ${gameState.players.length} igrača`);
-  }
-  
-  function renderCategoriesInLobby() {
-    const categoriesList = document.getElementById('categories-list');
-    if (!categoriesList) return;
-    
-    categoriesList.innerHTML = '';
-    
-    gameState.categories.forEach(category => {
-      const li = document.createElement('li');
-      li.textContent = category;
-      categoriesList.appendChild(li);
-    });
-    
-    logDebug(`Ažuriran prikaz kategorija: ${gameState.categories.length} kategorija`);
-  }
-  
-  function renderLettersGrid() {
-    const lettersGrid = document.getElementById('letters-grid');
-    if (!lettersGrid) return;
-    
-    lettersGrid.innerHTML = '';
-    
-    // Slova srpskog alfabeta
-    const allLetters = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWZŽ'.split('');
-    
-    allLetters.forEach(letter => {
-      const button = document.createElement('button');
-      button.classList.add('letter-btn');
-      button.textContent = letter;
-      
-      // Dodaj klasu ako je slovo već korišćeno
-      if (gameState.usedLetters && gameState.usedLetters.includes(letter)) {
-        button.classList.add('used');
-        button.disabled = true;
-      } else {
-        button.addEventListener('click', () => {
-          socket.emit('selectLetter', letter);
-          logDebug(`Izabrano slovo: ${letter}`);
-        });
-      }
-      
-      lettersGrid.appendChild(button);
-    });
-    
-    logDebug('Prikazan grid slova');
-  }
-  
-  function renderCategoriesInputs() {
-    const categoriesInputs = document.getElementById('categories-inputs');
-    if (!categoriesInputs) return;
-    
-    categoriesInputs.innerHTML = '';
-    
-    gameState.categories.forEach(category => {
-      const div = document.createElement('div');
-      div.classList.add('category-input');
-      
-      const label = document.createElement('label');
-      label.textContent = category;
-      
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.placeholder = `${category} na ${gameState.currentLetter}...`;
-      input.dataset.category = category;
-      
-      // Dodavanje autofokusa na prvi input
-      if (category === gameState.categories[0]) {
-        input.autofocus = true;
-      }
-      
-      // Event listener za automatsko prebacivanje na sledeći input
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const inputs = document.querySelectorAll('#categories-inputs input');
-          const currentIndex = Array.from(inputs).indexOf(e.target);
-          
-          if (currentIndex < inputs.length - 1) {
-            inputs[currentIndex + 1].focus();
-          } else {
-            submitAnswers();
-          }
-        }
-      });
-      
-      // Sačuvaj odgovor u gameState.answers na promenu
-      input.addEventListener('input', (e) => {
-        gameState.answers[category] = e.target.value;
-      });
-      
-      div.appendChild(label);
-      div.appendChild(input);
-      categoriesInputs.appendChild(div);
-    });
-  }
-  
-  function submitAnswers() {
-    // Prikupi odgovore iz inputa
-    const inputs = document.querySelectorAll('#categories-inputs input');
-    
-    inputs.forEach(input => {
-      gameState.answers[input.dataset.category] = input.value.trim();
-    });
-    
-    socket.emit('submitAnswers', gameState.answers);
-    gameState.submitted = true;
-    
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) {
-      submitBtn.disabled = true;
-    }
-    
-    // Onemogući inpute
-    inputs.forEach(input => {
-      input.disabled = true;
-    });
-    
-    logDebug(`Odgovori poslati`);
-  }
-  
-  function startTimer(seconds) {
-    // Zaustavi prethodni timer ako postoji
-    if (gameState.timerInterval) {
-      clearInterval(gameState.timerInterval);
-    }
-    
-    const timerDisplay = document.getElementById('timer');
-    if (!timerDisplay) return;
-    
-    // Postavi početno vreme
-    timerDisplay.textContent = seconds;
-    timerDisplay.classList.remove('warning');
-    
-    // Startuj odbrojavanje
-    gameState.timerInterval = setInterval(() => {
-      const currentTime = parseInt(timerDisplay.textContent);
-      
-      if (currentTime <= 0) {
-        clearInterval(gameState.timerInterval);
-        
-        // Ako nismo poslali odgovore, šaljemo prazne
-        if (!gameState.submitted) {
-          submitAnswers();
-        }
+      if (!username) {
+        showNotification('Unesite korisničko ime!');
         return;
       }
       
-      // Dodaj upozorenje kad je manje od 10 sekundi
-      if (currentTime <= 10) {
-        timerDisplay.classList.add('warning');
+      console.log('Kreiranje igre za korisnika:', username);
+      logDebug(`Pokušaj kreiranja igre za: ${username}`);
+      
+      // Pošalji zahtev serveru
+      socket.emit('createGame', username);
+    });
+  }
+  
+  // Pridruži se igri
+  const joinGameBtn = document.getElementById('join-game-btn');
+  if (joinGameBtn) {
+    joinGameBtn.addEventListener('click', () => {
+      const usernameInput = document.getElementById('username-input');
+      const gameIdInput = document.getElementById('game-id-input');
+      const username = usernameInput?.value.trim();
+      const gameId = gameIdInput?.value.trim().toUpperCase();
+      
+      if (!username) {
+        showNotification('Unesite korisničko ime!');
+        return;
       }
       
-      timerDisplay.textContent = currentTime - 1;
-    }, 1000);
-  }
-  
-  function renderResultsTable(answers, players, categories) {
-    const resultsTable = document.getElementById('results-table');
-    if (!resultsTable) return;
-    
-    resultsTable.innerHTML = '';
-    
-    // Kreiranje zaglavlja tabele
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-    
-    // Prva ćelija zaglavlja je prazna
-    const blankHeader = document.createElement('th');
-    headerRow.appendChild(blankHeader);
-    
-    // Dodaj igrače u zaglavlje
-    players.forEach(player => {
-      const th = document.createElement('th');
-      th.textContent = player.username;
-      headerRow.appendChild(th);
-    });
-    
-    thead.appendChild(headerRow);
-    resultsTable.appendChild(thead);
-    
-    // Kreiranje tela tabele
-    const tbody = document.createElement('tbody');
-    
-    // Za svaku kategoriju dodaj red
-    categories.forEach(category => {
-      const row = document.createElement('tr');
+      if (!gameId) {
+        showNotification('Unesite kod igre!');
+        return;
+      }
       
-      // Prva ćelija je naziv kategorije
-      const categoryCell = document.createElement('td');
-      categoryCell.textContent = category;
-      categoryCell.style.fontWeight = 'bold';
-      row.appendChild(categoryCell);
+      console.log('Pridruživanje igri:', gameId, 'kao', username);
+      logDebug(`Pokušaj pridruživanja igri: ${gameId}`);
       
-      // Za svakog igrača dodaj ćeliju sa odgovorom
-      players.forEach(player => {
-        const cell = document.createElement('td');
-        cell.classList.add('answer-cell');
-        
-        const playerAnswers = answers[player.id];
-        const answer = playerAnswers && playerAnswers.categories && playerAnswers.categories[category] ? 
-                      playerAnswers.categories[category] : '';
-        
-        // Ako je domaćin, dodaj kontrole za validaciju
-        if (gameState.isHost) {
-          const answerDiv = document.createElement('div');
-          answerDiv.classList.add('answer-validation');
-          
-          const answerSpan = document.createElement('span');
-          answerSpan.textContent = answer;
-          
-          const validBtn = document.createElement('button');
-          validBtn.classList.add('validation-btn', 'valid');
-          validBtn.innerHTML = '<i class="fas fa-check"></i>';
-          validBtn.dataset.playerId = player.id;
-          validBtn.dataset.category = category;
-          validBtn.dataset.valid = 'true';
-          
-          const invalidBtn = document.createElement('button');
-          invalidBtn.classList.add('validation-btn', 'invalid');
-          invalidBtn.innerHTML = '<i class="fas fa-times"></i>';
-          invalidBtn.dataset.playerId = player.id;
-          invalidBtn.dataset.category = category;
-          invalidBtn.dataset.valid = 'false';
-          
-          // Dodaj listener za validaciju
-          [validBtn, invalidBtn].forEach(btn => {
-            btn.addEventListener('click', (e) => {
-              const validationButtons = document.querySelectorAll(`.validation-btn[data-player-id="${player.id}"][data-category="${category}"]`);
-              
-              validationButtons.forEach(b => {
-                b.classList.remove('active');
-              });
-              
-              e.target.closest('.validation-btn').classList.add('active');
-            });
-          });
-          
-          answerDiv.appendChild(answerSpan);
-          answerDiv.appendChild(validBtn);
-          answerDiv.appendChild(invalidBtn);
-          
-          cell.appendChild(answerDiv);
-        } else {
-          cell.textContent = answer;
-        }
-        
-        row.appendChild(cell);
-      });
-      
-      tbody.appendChild(row);
-    });
-    
-    resultsTable.appendChild(tbody);
-  }
-  
-  function collectValidations() {
-    const validations = {};
-    
-    // Za svakog igrača
-    gameState.players.forEach(player => {
-      validations[player.id] = {};
-      
-      // Za svaku kategoriju
-      gameState.categories.forEach(category => {
-        const validBtn = document.querySelector(`.validation-btn[data-player-id="${player.id}"][data-category="${category}"][data-valid="true"].active`);
-        const invalidBtn = document.querySelector(`.validation-btn[data-player-id="${player.id}"][data-category="${category}"][data-valid="false"].active`);
-        
-        // Podrazumevano odgovor nije validan
-        validations[player.id][category] = !!validBtn;
-      });
-    });
-    
-    return validations;
-  }
-  
-  function renderFinalResults(players) {
-    const winnerDisplay = document.getElementById('winner-display');
-    const finalScores = document.getElementById('final-scores');
-    
-    if (!winnerDisplay || !finalScores) return;
-    
-    winnerDisplay.innerHTML = '';
-    finalScores.innerHTML = '';
-    
-    // Sortiraj igrače po bodovima
-    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-    
-    // Prikaz pobednika
-    const winner = sortedPlayers[0];
-    
-    // Kreiraj prikaz pobednika
-    const winnerTitle = document.createElement('h3');
-    winnerTitle.textContent = 'Pobednik';
-    
-    const winnerName = document.createElement('div');
-    winnerName.classList.add('winner-name');
-    winnerName.textContent = winner.username;
-    
-    const winnerScore = document.createElement('div');
-    winnerScore.textContent = `${winner.score} poena`;
-    
-    winnerDisplay.appendChild(winnerTitle);
-    winnerDisplay.appendChild(winnerName);
-    winnerDisplay.appendChild(winnerScore);
-    
-    // Prikaz svih rezultata
-    sortedPlayers.forEach((player, index) => {
-      const playerDiv = document.createElement('div');
-      playerDiv.classList.add('final-scores-item');
-      
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = `${index + 1}. ${player.username}`;
-      
-      const scoreSpan = document.createElement('span');
-      scoreSpan.classList.add('final-score-value');
-      scoreSpan.textContent = `${player.score} poena`;
-      
-      playerDiv.appendChild(nameSpan);
-      playerDiv.appendChild(scoreSpan);
-      
-      finalScores.appendChild(playerDiv);
+      socket.emit('joinGame', { gameId, username });
     });
   }
   
-  // Event listeneri
-  if (showDebugBtn) {
-    showDebugBtn.addEventListener('click', () => {
-      debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-      showDebugBtn.textContent = debugInfo.style.display === 'none' ? 'Prikaži debugger' : 'Sakrij debugger';
-      console.log('Debug toggle clicked');
-    });
-  }
-  
-  if (debugToggleBtn) {
-    debugToggleBtn.addEventListener('click', () => {
-      debugInfo.style.display = 'none';
-      showDebugBtn.textContent = 'Prikaži debugger';
-    });
-  }
-  
-  if (copyGameIdBtn) {
-    copyGameIdBtn.addEventListener('click', () => {
-      const gameId = document.getElementById('game-id-display').textContent;
-      navigator.clipboard.writeText(gameId)
-        .then(() => {
-          showNotification('Kod igre kopiran u clipboard!');
-        })
-        .catch(err => {
-          console.error('Greška pri kopiranju:', err);
-          showNotification('Greška pri kopiranju koda');
-        });
-    });
-  }
-  
+  // Spreman
+  const readyBtn = document.getElementById('ready-btn');
   if (readyBtn) {
     readyBtn.addEventListener('click', () => {
       socket.emit('playerReady');
       readyBtn.disabled = true;
       readyBtn.textContent = 'Čekanje ostalih igrača...';
       logDebug('Poslat status "spreman"');
+    });
+  }
+  
+  // Kopiraj kod igre
+  const copyGameIdBtn = document.getElementById('copy-game-id');
+  if (copyGameIdBtn) {
+    copyGameIdBtn.addEventListener('click', () => {
+      const gameIdDisplay = document.getElementById('game-id-display');
+      const gameId = gameIdDisplay?.textContent;
+      
+      if (gameId) {
+        navigator.clipboard.writeText(gameId)
+          .then(() => {
+            showNotification('Kod igre kopiran u clipboard!');
+          })
+          .catch(err => {
+            console.error('Greška pri kopiranju:', err);
+            showNotification('Greška pri kopiranju koda');
+          });
+      }
     });
   }
   
@@ -496,41 +160,344 @@ document.addEventListener('DOMContentLoaded', () => {
       logDebug('Zahtev za novu igru');
     });
   }
+}
+
+// Funkcija za postavljanje Socket.io listenera
+function setupSocketListeners() {
+  // Povezivanje na server
+  socket.on('connect', () => {
+    console.log('Povezan na server sa ID:', socket.id);
+    const debugSocketId = document.getElementById('debug-socket-id');
+    const debugStatus = document.getElementById('debug-status');
+    
+    if (debugSocketId) {
+      debugSocketId.textContent = socket.id;
+    }
+    
+    if (debugStatus) {
+      debugStatus.textContent = 'Povezan';
+    }
+    
+    logDebug('Povezan na server');
+  });
   
-  if (createGameBtn) {
-    createGameBtn.addEventListener('click', () => {
-      const username = usernameInput.value.trim();
-      if (!username) {
-        showNotification('Unesite korisničko ime!');
-        return;
-      }
-      
-      console.log('Kreiranje igre za korisnika:', username);
-      logDebug(`Pokušaj kreiranja igre za: ${username}`);
-      
-      // Pošalji zahtev serveru
-      socket.emit('createGame', username);
-    });
-  }
+  // Prekid veze
+  socket.on('disconnect', () => {
+    console.log('Prekinuta veza sa serverom');
+    const debugStatus = document.getElementById('debug-status');
+    
+    if (debugStatus) {
+      debugStatus.textContent = 'Prekinuta veza';
+    }
+    
+    logDebug('Veza sa serverom prekinuta');
+    showNotification('Veza sa serverom je prekinuta. Pokušajte ponovo.');
+  });
   
-  if (joinGameBtn) {
-    joinGameBtn.addEventListener('click', () => {
-      const username = usernameInput.value.trim();
-      const gameId = gameIdInput ? gameIdInput.value.trim().toUpperCase() : '';
+  // Kreirana igra
+  socket.on('gameCreated', (data) => {
+    console.log('Primljen gameCreated event:', data);
+    logDebug(`Igra kreirana: ${data.gameId}`);
+    
+    // Sačuvaj podatke u gameState
+    gameState.gameId = data.gameId;
+    gameState.players = data.players;
+    gameState.categories = data.categories;
+    gameState.isHost = data.isHost;
+    gameState.username = data.players.find(p => p.id === socket.id)?.username;
+    
+    // Prebaci na ekran čekaonice
+    showScreen('lobby');
+    
+    // Postavi osnovne informacije
+    const gameIdDisplay = document.getElementById('game-id-display');
+    if (gameIdDisplay) {
+      gameIdDisplay.textContent = data.gameId;
+    }
+    
+    // Render igrača i kategorija
+    renderPlayersInLobby();
+    renderCategoriesInLobby();
+    
+    // Domaćin može videti posebne opcije
+    if (data.isHost) {
+      showNotification('Vi ste domaćin igre. Podelite kod igre sa prijateljima.');
+    }
+  });
+  
+  // Pridružen igri
+  socket.on('gameJoined', (data) => {
+    console.log('Primljen gameJoined event:', data);
+    logDebug(`Pridružen igri: ${data.gameId}`);
+    
+    // Sačuvaj podatke u gameState
+    gameState.gameId = data.gameId;
+    gameState.players = data.players;
+    gameState.categories = data.categories;
+    gameState.isHost = data.isHost;
+    gameState.username = data.players.find(p => p.id === socket.id)?.username;
+    
+    // Prebaci na ekran čekaonice
+    showScreen('lobby');
+    
+    // Postavi osnovne informacije
+    const gameIdDisplay = document.getElementById('game-id-display');
+    if (gameIdDisplay) {
+      gameIdDisplay.textContent = data.gameId;
+    }
+    
+    // Render igrača i kategorija
+    renderPlayersInLobby();
+    renderCategoriesInLobby();
+    
+    // Notifikacija
+    showNotification('Uspešno ste se pridružili igri!');
+  });
+  
+  // Greška
+  socket.on('error', (message) => {
+    console.error('Primljena greška od servera:', message);
+    showNotification(message);
+    logDebug(`Greška: ${message}`);
+  });
+  
+  // Statusne promene igrača
+  socket.on('playerStatusChanged', (data) => {
+    gameState.players = data.players;
+    renderPlayersInLobby();
+    logDebug('Status igrača ažuriran');
+    
+    // Ako su svi igrači spremni, prikaži odgovarajuću poruku
+    const allReady = gameState.players.every(player => player.ready);
+    if (allReady) {
+      const waitingMessage = document.getElementById('waiting-message');
+      if (waitingMessage) {
+        waitingMessage.textContent = 'Svi igrači su spremni! Igra će uskoro početi...';
+        waitingMessage.classList.remove('hidden');
+      }
+    }
+  });
+  
+  // Novi igrač se pridružio
+  socket.on('playerJoined', (data) => {
+    gameState.players = data.players;
+    renderPlayersInLobby();
+    
+    const newPlayer = data.players[data.players.length - 1];
+    showNotification(`${newPlayer.username} se pridružio igri`);
+    logDebug(`Novi igrač se pridružio: ${newPlayer.username}`);
+  });
+  
+  // Igrač je napustio igru
+  socket.on('playerLeft', (data) => {
+    gameState.players = data.players;
+    renderPlayersInLobby();
+    logDebug(`Igrač ${data.leftUsername} je napustio igru`);
+    showNotification(`${data.leftUsername} je napustio igru`);
+  });
+  
+  // Igra je započeta
+  socket.on('gameStarted', (data) => {
+    // Postavi status igre
+    if (data.status === 'letter_selection') {
+      // Prebaci na ekran za izbor slova
+      showScreen('letter-selection');
       
-      if (!username) {
-        showNotification('Unesite korisničko ime!');
-        return;
+      // Postavi poruku o igraču na potezu
+      const currentPlayerMessage = document.getElementById('current-player-message');
+      const spectatorMessage = document.getElementById('spectator-message');
+      
+      if (currentPlayerMessage && spectatorMessage) {
+        const isCurrentPlayer = data.currentPlayer.id === socket.id;
+        
+        if (isCurrentPlayer) {
+          currentPlayerMessage.textContent = 'Ti si na potezu! Izaberi slovo:';
+          spectatorMessage.classList.add('hidden');
+        } else {
+          currentPlayerMessage.textContent = `${data.currentPlayer.username} bira slovo...`;
+          spectatorMessage.classList.remove('hidden');
+        }
       }
       
-      if (!gameId) {
-        showNotification('Unesite kod igre!');
-        return;
+      // Prikaži grid slova
+      renderLettersGrid();
+    }
+    
+    logDebug('Igra je započeta');
+  });
+  
+  // Runda je započeta (slovo je izabrano)
+  socket.on('roundStarted', (data) => {
+    // Sačuvaj podatke
+    gameState.currentLetter = data.letter;
+    gameState.roundTime = data.roundTime;
+    gameState.answers = {};
+    gameState.submitted = false;
+    
+    // Prebaci na ekran igre
+    showScreen('play');
+    
+    // Postavi slovo
+    const currentLetterDisplay = document.getElementById('current-letter');
+    if (currentLetterDisplay) {
+      currentLetterDisplay.textContent = data.letter;
+    }
+    
+    // Render inputa za kategorije
+    renderCategoriesInputs();
+    
+    // Startuj timer
+    startTimer(data.roundTime);
+    
+    // Reset dugmeta za slanje
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+    }
+    
+    logDebug(`Runda započeta sa slovom ${data.letter}`);
+  });
+  
+  // Igrač je predao odgovore
+  socket.on('playerSubmitted', (data) => {
+    showNotification(`${data.username} je predao odgovore`);
+    logDebug(`${data.username} je predao odgovore`);
+  });
+  
+  // Odgovori predati
+  socket.on('answersSubmitted', () => {
+    showNotification('Odgovori uspešno predati!');
+    logDebug('Odgovori uspešno predati');
+  });
+  
+  // Kraj runde
+  socket.on('roundEnded', (data) => {
+    // Prebaci na ekran rezultata
+    showScreen('round-results');
+    
+    // Postavi slovo
+    const resultLetterDisplay = document.getElementById('result-letter');
+    if (resultLetterDisplay) {
+      resultLetterDisplay.textContent = data.letter;
+    }
+    
+    // Render tabele rezultata
+    renderResultsTable(data.answers, gameState.players, data.categories);
+    
+    // Ako je domaćin, prikaži kontrole za validaciju
+    const validationControls = document.getElementById('validation-controls');
+    const validateBtn = document.getElementById('validate-btn');
+    const nextPlayerMessage = document.getElementById('next-player-message');
+    
+    if (gameState.isHost && validationControls && validateBtn) {
+      validationControls.classList.remove('hidden');
+      validateBtn.disabled = false;
+    } else if (validationControls && nextPlayerMessage) {
+      validationControls.classList.add('hidden');
+      nextPlayerMessage.textContent = 'Čekanje domaćina da potvrdi rezultate...';
+    }
+    
+    logDebug('Runda je završena');
+  });
+  
+  // Validacija runde
+  socket.on('roundValidated', (data) => {
+    // Ažuriraj igrače sa novim rezultatima
+    gameState.players = data.players;
+    
+    // Sakrij kontrole validacije
+    const validationControls = document.getElementById('validation-controls');
+    if (validationControls) {
+      validationControls.classList.add('hidden');
+    }
+    
+    // Ako je sledeća faza biranje slova
+    if (data.nextStatus === 'letter_selection') {
+      // Prikaži dugme za sledeću rundu
+      const nextRoundBtn = document.getElementById('next-round-btn');
+      const nextPlayerMessage = document.getElementById('next-player-message');
+      
+      if (nextRoundBtn && nextPlayerMessage) {
+        nextRoundBtn.classList.remove('hidden');
+        nextRoundBtn.disabled = false;
+        
+        // Postavi poruku o sledećem igraču
+        const nextPlayer = data.currentPlayer;
+        nextPlayerMessage.textContent = `Sledeći na potezu: ${nextPlayer.username}`;
+        
+        // Ako smo mi sledeći na potezu
+        if (nextPlayer.id === socket.id) {
+          nextPlayerMessage.textContent += ' (Ti si na potezu!)';
+        }
       }
+    }
+    
+    logDebug('Runda validirana');
+  });
+  
+  // Automatski prelaz na novu rundu
+  socket.on('nextRound', (data) => {
+    // Status igre je letter_selection
+    showScreen('letter-selection');
+    
+    // Ažuriraj korišćena slova
+    gameState.usedLetters = data.usedLetters;
+    
+    // Postavi poruku o igraču na potezu
+    const currentPlayerMessage = document.getElementById('current-player-message');
+    const spectatorMessage = document.getElementById('spectator-message');
+    
+    if (currentPlayerMessage && spectatorMessage) {
+      const isCurrentPlayer = data.currentPlayer.id === socket.id;
       
-      console.log('Pridruživanje igri:', gameId, 'kao', username);
-      logDebug(`Pokušaj pridruživanja igri: ${gameId}`);
-      
-      socket.emit('joinGame', { gameId, username });
-    });
-  }
+      if (isCurrentPlayer) {
+        currentPlayerMessage.textContent = 'Ti si na potezu! Izaberi slovo:';
+        spectatorMessage.classList.add('hidden');
+      } else {
+        currentPlayerMessage.textContent = `${data.currentPlayer.username} bira slovo...`;
+        spectatorMessage.classList.remove('hidden');
+      }
+    }
+    
+    // Prikaži grid slova
+    renderLettersGrid();
+    
+    logDebug('Sledeća runda započeta');
+  });
+  
+  // Kraj igre
+  socket.on('gameEnded', (data) => {
+    showScreen('final-results');
+    
+    // Render konačnih rezultata
+    renderFinalResults(data.players);
+    
+    logDebug('Igra je završena');
+  });
+  
+  // Reset igre
+  socket.on('gameReset', (data) => {
+    // Ažuriraj podatke
+    gameState.players = data.players;
+    gameState.categories = data.categories;
+    gameState.usedLetters = [];
+    gameState.currentLetter = null;
+    
+    // Prebaci na ekran čekaonice
+    showScreen('lobby');
+    
+    // Render igrača i kategorija
+    renderPlayersInLobby();
+    renderCategoriesInLobby();
+    
+    // Reset kontrola
+    const readyBtn = document.getElementById('ready-btn');
+    if (readyBtn) {
+      readyBtn.disabled = false;
+      readyBtn.textContent = 'Spreman';
+    }
+    
+    logDebug('Igra je resetovana');
+    showNotification('Nova igra je spremna!');
+  });
+}
