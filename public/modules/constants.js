@@ -19,7 +19,7 @@ export const GAME_STATUS = {
 };
 
 // Srpski alfabet - za izbor slova
-export const SERBIAN_ALPHABET = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWZŽ'.split('');
+export const SERBIAN_ALPHABET = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWZŽ'.split('').concat(['LJ', 'NJ', 'DŽ']);
 
 // Defaultne kategorije
 export const DEFAULT_CATEGORIES = [
