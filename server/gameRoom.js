@@ -436,38 +436,42 @@ class GameRoom {
     }
     
     // Sačuvaj validacije i dodaj bodove
-    this.players.forEach(p => {
-      let roundScore = 0;
-      
-      Object.keys(currentRound.answers[p.id].categories).forEach(category => {
-        const answer = currentRound.answers[p.id].categories[category];
-        const isValid = validations[p.id] && 
-                        validations[p.id][category] !== undefined ? 
-                        validations[p.id][category] : 
-                        false;
-        
-        // Dodeli bodove ako je odgovor validan
-        if (isValid && answer && answer.trim() !== '') {
-          roundScore += config.gameSettings.pointsPerValidAnswer;
-        }
-        
-        // Sačuvaj rezultat
-        if (!currentRound.results[p.id]) {
-          currentRound.results[p.id] = {
-            categories: {}
-          };
-        }
-        
-        currentRound.results[p.id].categories[category] = {
-          answer: answer,
-          isValid: isValid
-        };
-      });
-      
-      // Dodaj bodove igraču
-      p.score += roundScore;
-      currentRound.results[p.id].score = roundScore;
-    });
+// Sačuvaj validacije i dodaj bodove
+this.players.forEach(p => {
+  let roundScore = 0;
+  
+  Object.keys(currentRound.answers[p.id].categories).forEach(category => {
+    const answer = currentRound.answers[p.id].categories[category];
+    const isValid = validations[p.id] && 
+                    validations[p.id][category] !== undefined ? 
+                    validations[p.id][category] : 
+                    false;
+    
+    // Dodeli bodove ako je odgovor validan i nije prazan
+    if (isValid && answer && answer.trim() !== '') {
+      roundScore += config.gameSettings.pointsPerValidAnswer; // Svaki tačan odgovor 10 poena
+    }
+    
+    // Sačuvaj rezultat
+    if (!currentRound.results[p.id]) {
+      currentRound.results[p.id] = {
+        categories: {},
+        score: 0
+      };
+    }
+    
+    currentRound.results[p.id].categories[category] = {
+      answer: answer,
+      isValid: isValid
+    };
+  });
+  
+  // Dodaj bodove igraču
+  p.score += roundScore;
+  currentRound.results[p.id].score = roundScore;
+  
+  logger.debug(`Igrač ${p.username} dobio ${roundScore} poena u ovoj rundi. Ukupno: ${p.score}`);
+});
     
     this.updateActivity();
     
@@ -512,12 +516,17 @@ class GameRoom {
   }
   
   // Priprema sledeće runde
-  prepareNextRound() {
-    // Prebaci potez na sledećeg igrača
-    this.moveToNextPlayer();
-    this.status = GAME_STATUS.LETTER_SELECTION;
-    this.updateActivity();
-  }
+// Priprema sledeće runde
+prepareNextRound() {
+  // Prebaci potez na sledećeg igrača
+  this.moveToNextPlayer();
+  this.status = GAME_STATUS.LETTER_SELECTION;
+  this.updateActivity();
+  
+  // Loguj koji igrač je na potezu
+  const currentPlayer = this.getCurrentPlayer();
+  logger.debug(`Sledeći igrač na potezu: ${currentPlayer.username}`);
+}
   
   // Prebaci potez na sledećeg igrača
   moveToNextPlayer() {
