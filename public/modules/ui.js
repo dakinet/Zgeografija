@@ -100,6 +100,11 @@ export function renderLettersGrid() {
   // Slova srpskog alfabeta
   const allLetters = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWZŽ'.split('');
   
+  // Dobavljanje trenutnog igrača
+  const currentPlayer = gameState.players.find(player => player.id === socket.id);
+  // Proveri da li je trenutni igrač na potezu
+  const isCurrentPlayersTurn = gameState.players[gameState.currentPlayerIndex]?.id === socket.id;
+  
   allLetters.forEach(letter => {
     const button = document.createElement('button');
     button.classList.add('letter-btn');
@@ -108,6 +113,9 @@ export function renderLettersGrid() {
     // Dodaj klasu ako je slovo već korišćeno
     if (gameState.usedLetters && gameState.usedLetters.includes(letter)) {
       button.classList.add('used');
+      button.disabled = true;
+    } else if (!isCurrentPlayersTurn) {
+      // Ako nije trenutni igrač na potezu, onemogući dugmad
       button.disabled = true;
     } else {
       button.addEventListener('click', () => {
