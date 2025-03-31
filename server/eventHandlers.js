@@ -21,6 +21,9 @@ function initializeEventHandlers(io, socket) {
     // Kreiraj igru
     const game = gameManager.createGame(socket.id, username);
     
+    // Pridruži socket sobi
+    socket.join(game.id);
+    
     // Pošalji odgovor klijentu
     socket.emit('gameCreated', {
       gameId: game.id,
@@ -65,9 +68,11 @@ function initializeEventHandlers(io, socket) {
       isHost: result.isHost
     });
     
-    // Obavesti ostale igrače
-    socket.to(data.gameId).emit('playerJoined', {
-      players: result.players
+    // Obavesti SVE igrače u sobi o novom igraču
+    io.to(data.gameId).emit('playerJoined', {
+      players: result.players,
+      newPlayerId: socket.id,
+      newPlayerUsername: data.username
     });
   });
   
@@ -170,8 +175,9 @@ function initializeEventHandlers(io, socket) {
     
     // Obavesti ostale igrače da je ovaj igrač poslao odgovore
     const player = game.getPlayerBySocketId(socket.id);
-    socket.to(game.id).emit('playerSubmitted', {
-      username: player.username
+    io.to(game.id).emit('playerSubmitted', {
+      username: player.username,
+      playerId: socket.id
     });
     
     // Ako su svi igrači poslali odgovore, završi rundu
@@ -284,6 +290,28 @@ function initializeEventHandlers(io, socket) {
       players: result.players,
       categories: result.categories
     });
+  });
+  
+  // Handler za disconnect
+  socket.on('disconnect', () => {
+    logger.debug('disconnect event', { socketId: socket.id });
+    
+    // Pronađi igru
+    const game = gameManager.getGameBySocketId(socket.id);
+    
+    if (game) {
+      // Obavesti ostale igrače o izlasku igrača
+      const player = game.getPlayerBySocketId(socket.id);
+      if (player) {
+        const result = game.handlePlayerDisconnect(socket.id);
+        if (result.success) {
+          io.to(game.id).emit('playerLeft', {
+            players: result.players,
+            leftUsername: player.username
+          });
+        }
+      }
+    }
   });
 }
 
