@@ -1,5 +1,5 @@
 // app.js - Glavni fajl za Zanimljiva Geografija igru
-import { initializeSocket, socket } from '/modules/socket.js';
+import { initializeSocket, socket } from './modules/socket.js';
 import { gameState } from './modules/gameState.js';
 import { 
   setupUI, 
