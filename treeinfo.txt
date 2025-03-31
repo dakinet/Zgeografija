@@ -1,20 +1,21 @@
 zanimljiva-geografija/
 │
-├── public/                  # Folder za statičke fajlove
-│   ├── index.html           # Glavni HTML fajl
-│   ├── styles.css           # CSS stilovi
-│   ├── app.js               # Glavni JavaScript fajl
-│   └── modules/             # JavaScript moduli
-│       ├── constants.js     # Konstantne vrednosti
-│       ├── debugger.js      # Modul za debugiranje
-│       ├── gameActions.js   # Akcije u igri
-│       ├── gameState.js     # Stanje igre
-│       ├── socket.js        # Socket.io komunikacija
-│       ├── ui.js            # UI funkcionalnosti
-│       └── utils.js         # Pomoćne funkcije
+├── server/                      # Server modules
+│   ├── config.js                # Konfiguracija servera
+│   ├── eventHandlers.js         # Socket.IO event handleri
+│   ├── gameManager.js           # Upravljanje igrama
+│   ├── gameRoom.js              # Klasa za jednu igru
+│   ├── logger.js                # Sistem za logovanje
+│   ├── utils.js                 # Pomoćne funkcije
+│   └── validation.js            # Validacija podataka
 │
-├── server.js                # Server Node.js
-├── package.json             # Konfiguracija projekta
-├── render.yaml              # Konfiguracija za Render
-├── .gitignore               # Git ignore fajl
-└── README.md                # Dokumentacija projekta
+├── public/                      # Klijentski fajlovi
+│   ├── index.html
+│   ├── styles.css
+│   ├── app.js
+│   └── modules/                 # Klijentski JavaScript moduli
+│
+├── logs/                        # Folder za logove
+├── server.js                    # Glavni server fajl
+├── package.json
+└── README.md
