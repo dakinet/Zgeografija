@@ -100,10 +100,12 @@ export function renderLettersGrid() {
   // Slova srpskog alfabeta
   const allLetters = 'ABCČĆDĐEFGHIJKLMNOPQRSŠTUVWZŽ'.split('');
   
-  // Dobavljanje trenutnog igrača
-  const currentPlayer = gameState.players.find(player => player.id === socket.id);
-  // Proveri da li je trenutni igrač na potezu
-  const isCurrentPlayersTurn = gameState.players[gameState.currentPlayerIndex]?.id === socket.id;
+  // Proveri da li je trenutni korisnik na potezu
+  const currentPlayer = gameState.players.find(p => p.id === socket.id);
+  const currentPlayerOnTurn = gameState.players.find(p => 
+    gameState.players.indexOf(p) === gameState.currentPlayerIndex
+  );
+  const isMyTurn = currentPlayerOnTurn && currentPlayerOnTurn.id === socket.id;
   
   allLetters.forEach(letter => {
     const button = document.createElement('button');
@@ -114,9 +116,10 @@ export function renderLettersGrid() {
     if (gameState.usedLetters && gameState.usedLetters.includes(letter)) {
       button.classList.add('used');
       button.disabled = true;
-    } else if (!isCurrentPlayersTurn) {
-      // Ako nije trenutni igrač na potezu, onemogući dugmad
+    } else if (!isMyTurn) {
+      // Ako nije igrač na potezu, onemogući dugme
       button.disabled = true;
+      button.classList.add('disabled');
     } else {
       button.addEventListener('click', () => {
         selectLetter(letter);
