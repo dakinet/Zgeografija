@@ -297,6 +297,7 @@ function setupSocketListeners() {
   });
   
   // Igra je započeta
+// Igra je započeta
 socket.on('gameStarted', (data) => {
   // Postavi status igre
   if (data.status === 'letter_selection') {
