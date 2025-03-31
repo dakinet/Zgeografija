@@ -15,6 +15,10 @@ const gameManager = require('./server/gameManager');
 const app = express();
 const server = http.createServer(app);
 
+// Dodaj ove linije za middleware konfiguraciju
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Konfiguracija Socket.io
 const io = socketIo(server, {
   cors: {
