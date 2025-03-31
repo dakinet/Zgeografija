@@ -297,34 +297,37 @@ function setupSocketListeners() {
   });
   
   // Igra je započeta
-  socket.on('gameStarted', (data) => {
-    // Postavi status igre
-    if (data.status === 'letter_selection') {
-      // Prebaci na ekran za izbor slova
-      showScreen('letter-selection');
+socket.on('gameStarted', (data) => {
+  // Postavi status igre
+  if (data.status === 'letter_selection') {
+    // Ažuriraj stanje igre sa trenutnim igračem na potezu
+    gameState.currentPlayerIndex = gameState.players.findIndex(p => p.id === data.currentPlayer.id);
+    
+    // Prebaci na ekran za izbor slova
+    showScreen('letter-selection');
+    
+    // Postavi poruku o igraču na potezu
+    const currentPlayerMessage = document.getElementById('current-player-message');
+    const spectatorMessage = document.getElementById('spectator-message');
+    
+    if (currentPlayerMessage && spectatorMessage) {
+      const isCurrentPlayer = data.currentPlayer.id === socket.id;
       
-      // Postavi poruku o igraču na potezu
-      const currentPlayerMessage = document.getElementById('current-player-message');
-      const spectatorMessage = document.getElementById('spectator-message');
-      
-      if (currentPlayerMessage && spectatorMessage) {
-        const isCurrentPlayer = data.currentPlayer.id === socket.id;
-        
-        if (isCurrentPlayer) {
-          currentPlayerMessage.textContent = 'Ti si na potezu! Izaberi slovo:';
-          spectatorMessage.classList.add('hidden');
-        } else {
-          currentPlayerMessage.textContent = `${data.currentPlayer.username} bira slovo...`;
-          spectatorMessage.classList.remove('hidden');
-        }
+      if (isCurrentPlayer) {
+        currentPlayerMessage.textContent = 'Ti si na potezu! Izaberi slovo:';
+        spectatorMessage.classList.add('hidden');
+      } else {
+        currentPlayerMessage.textContent = `${data.currentPlayer.username} bira slovo...`;
+        spectatorMessage.classList.remove('hidden');
       }
-      
-      // Prikaži grid slova
-      renderLettersGrid();
     }
     
-    logDebug('Igra je započeta');
-  });
+    // Prikaži grid slova
+    renderLettersGrid();
+  }
+  
+  logDebug('Igra je započeta');
+});
   
   // Runda je započeta (slovo je izabrano)
   socket.on('roundStarted', (data) => {
