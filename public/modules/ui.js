@@ -280,6 +280,96 @@ export function renderResultsTable(answers, players, categories) {
   });
   
   resultsTable.appendChild(tbody);
+  
+  // Dodaj red za ukupan rezultat
+  renderScoreSummary(players);
+}
+
+// Funkcija za prikaz ukupnog rezultata
+export function renderScoreSummary(players) {
+  // Proveri da li element za prikaz rezultata već postoji
+  let scoreSummaryContainer = document.getElementById('score-summary-container');
+  
+  // Ako ne postoji, kreiraj ga
+  if (!scoreSummaryContainer) {
+    scoreSummaryContainer = document.createElement('div');
+    scoreSummaryContainer.id = 'score-summary-container';
+    scoreSummaryContainer.classList.add('score-summary-container');
+    
+    // Dodaj kontejner na stranicu
+    const resultsContainer = document.querySelector('.results-table-container');
+    if (resultsContainer) {
+      resultsContainer.parentNode.insertBefore(scoreSummaryContainer, resultsContainer.nextSibling);
+    }
+  }
+  
+  // Očisti sadržaj
+  scoreSummaryContainer.innerHTML = '';
+  
+  // Kreiraj tabelu za prikaz rezultata
+  const scoreTable = document.createElement('table');
+  scoreTable.classList.add('score-summary-table');
+  
+  // Kreiraj zaglavlje
+  const thead = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  
+  const playerHeader = document.createElement('th');
+  playerHeader.textContent = 'Igrač';
+  headerRow.appendChild(playerHeader);
+  
+  const currentRoundHeader = document.createElement('th');
+  currentRoundHeader.textContent = 'Trenutna runda';
+  headerRow.appendChild(currentRoundHeader);
+  
+  const previousRoundsHeader = document.createElement('th');
+  previousRoundsHeader.textContent = 'Prethodne runde';
+  headerRow.appendChild(previousRoundsHeader);
+  
+  const totalHeader = document.createElement('th');
+  totalHeader.textContent = 'Ukupno';
+  headerRow.appendChild(totalHeader);
+  
+  thead.appendChild(headerRow);
+  scoreTable.appendChild(thead);
+  
+  // Kreiraj telo tabele
+  const tbody = document.createElement('tbody');
+  
+  // Za svakog igrača dodaj red
+  players.forEach(player => {
+    const row = document.createElement('tr');
+    
+    // Ime igrača
+    const nameCell = document.createElement('td');
+    nameCell.textContent = player.username;
+    nameCell.style.fontWeight = 'bold';
+    row.appendChild(nameCell);
+    
+    // Trenutna runda
+    const currentRoundScore = gameState.currentRoundScore && gameState.currentRoundScore[player.id] 
+      ? gameState.currentRoundScore[player.id] : 0;
+    const currentRoundCell = document.createElement('td');
+    currentRoundCell.textContent = currentRoundScore;
+    row.appendChild(currentRoundCell);
+    
+    // Prethodne runde
+    const previousRoundsScore = player.score - currentRoundScore;
+    const previousRoundsCell = document.createElement('td');
+    previousRoundsCell.textContent = previousRoundsScore;
+    row.appendChild(previousRoundsCell);
+    
+    // Ukupno
+    const totalCell = document.createElement('td');
+    totalCell.textContent = player.score;
+    totalCell.style.fontWeight = 'bold';
+    row.appendChild(totalCell);
+    
+    tbody.appendChild(row);
+  });
+  
+  scoreTable.appendChild(tbody);
+  scoreSummaryContainer.appendChild(scoreTable);
 }
 
 // Funkcija za prikaz konačnih rezultata
